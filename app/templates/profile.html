@@ -24,12 +24,14 @@
         </div>
 
         {% for post in tweets %}
-          <div class="card">
-            <img src="http://placehold.it/30x30" alt="Thumbnail Picture" class="prof-thumb-pic">
-            <p class="card-subtitle">{{ post.date_posted}}</p>
-            <p class="card-subtitle">@{{ post.username}}</p>
-            <h4>{{ post.tweet }}</h4>
-          </div><!--ends tweet-->
+          {% if post.user_id == person.id %}
+            <div class="card">
+              <img src="http://placehold.it/30x30" alt="Thumbnail Picture" class="prof-thumb-pic">
+              <p class="card-subtitle">{{ post.date_posted }}</p>
+              <p class="card-subtitle">@{{ person.username }}</p>
+              <h4>{{ post.tweet }}</h4>
+            </div><!--ends tweet-->
+          {% endif %}
         {% endfor %}
       </div> <!--ends col -8 for tweets-->
 
