@@ -1,7 +1,8 @@
 from app import app, db
 from flask import render_template, url_for, redirect, flash
 from app.forms import TitleForm, ContactForm, LoginForm, RegisterForm, PostForm
-from app. models import Post
+from app. models import Post, User
+from flask_login import login_user, logout_user, login_required, current_user
 
 @app.route('/')
 @app.route('/index')
@@ -75,6 +76,23 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
+        user = User(
+            first_name = form.first_name.data,
+            last_name = form.last_name.data,
+            username = form.username.data,
+            email = form.email.data,
+            age = form.age.data,
+            bio = form.bio.data,
+        )
+
+        #include password to user
+        user.set_password(form.password.data)
+
+        #add to stage and commit
+
+        db.session.add(user)
+        db.session.commit()
+
         flash(f'You have been registered!')
 
         return redirect(url_for('login'))
@@ -89,38 +107,11 @@ def profile(username = ''):
         return redirect(url_for('login'))
     form = PostForm()
 
-    people = [
-    {
-        'id' : 1,
-        'first_name' : 'John',
-        'last_name' : 'Jingle',
-        'username' : 'hiemerschmidt',
-        'bio' : 'His name is my name too.',
-        'age' : 180
-    },
-    {
-        'id' : 2,
-        'first_name' : 'Max',
-        'last_name' : 'Smith',
-        'username' : 'maxsmith',
-        'bio' : 'I just stole someone\'s identity!',
-        'age' : 22
-    }
-    ]
-
-    person = {}
-
-    for p in people:
-        if p[ 'username' ] == username:
-            person = p
-            break
-
-
-    tweets = Post.query.all()
+    person = User.query.filter_by(username=username).first()
 
     if form.validate_on_submit():
         tweet = form.tweet.data
-        post = Post(user_id=person['id'], tweet=tweet)
+        post = Post(user_id=person.id, tweet=tweet)
 
         # commit to database
         db.session.add(post)
@@ -128,4 +119,9 @@ def profile(username = ''):
 
         return redirect(url_for('profile', username=username))
 
-    return render_template('profile.html', title='Profile', person=person, tweets=tweets, form=form, username=username)
+    return render_template('profile.html', title='Profile', form=form, username=username, person=person)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
