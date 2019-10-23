@@ -1,4 +1,4 @@
-from app import app
+from app import app, db
 from flask import render_template, url_for, redirect, flash
 from app.forms import TitleForm, ContactForm, LoginForm, RegisterForm, PostForm
 from app. models import Post
@@ -119,7 +119,13 @@ def profile(username = ''):
     tweets = Post.query.all()
 
     if form.validate_on_submit():
+        tweet = form.tweet.data
+        post = Post(user_id=person['id'], tweet=tweet)
 
-        return redirect(url_for('profile'))
+        # commit to database
+        db.session.add(post)
+        db. session.commit()
 
-    return render_template('profile.html', title='Profile', person=person, tweets=tweets, form=form)
+        return redirect(url_for('profile', username=username))
+
+    return render_template('profile.html', title='Profile', person=person, tweets=tweets, form=form, username=username)
