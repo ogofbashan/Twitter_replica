@@ -64,10 +64,26 @@ def contact():
 def login():
     form = LoginForm()
 
-    if form.validate_on_submit():
-        flash(f'You have been logged in!')
+    #if user is already logged in, redirect them
+    if current_user.is_authenticated:
+        flash('You are already logged in!')
+        return redirect(url_for('profile', username=current_user.username))
 
-        return redirect(url_for('index'))
+    if form.validate_on_submit():
+
+        # query the db for the user information, and log them in if everything is validators
+        user = User.query.filter_by(email=form.email.data).first()
+
+        # if user doesn't exist, reload page and flash message
+
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid Credentials.')
+            return redirect(url_for('login'))
+
+        #if the user does exist, and credentials are correct, log them in
+        login_user(user)
+        flash(f'You have been logged in!')
+        return redirect(url_for('profile', username=current_user.username))
 
     return render_template('form.html', form=form, title='Login')
 
@@ -111,7 +127,7 @@ def profile(username = ''):
 
     if form.validate_on_submit():
         tweet = form.tweet.data
-        post = Post(user_id=person.id, tweet=tweet)
+        post = Post(user_id=current_user.id, tweet=tweet)
 
         # commit to database
         db.session.add(post)

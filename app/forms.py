@@ -1,6 +1,9 @@
+from app import app, db
+from app.models import User
+from flask import flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, PasswordField, IntegerField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
 class PostForm(FlaskForm):
     tweet = StringField('What are you doing?', validators=[DataRequired(), Length(max=140)])
@@ -31,3 +34,15 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     password2= PasswordField('Re-type Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
+
+    def validate_username(self,username):
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            flash('Invalid Username')
+            raise ValidationError('Invalid Username')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            flash('Invalid E-mail')
+            raise ValidationError('Invalid E-mail')

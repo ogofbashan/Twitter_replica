@@ -19,9 +19,11 @@
       </div> <!--ends col-4 for bio-->
 
       <div class="col-md-8" id="posts">
-        <div class="card">
-          {{wtf.quick_form(form)}}
-        </div>
+        {% if person.username == current_user.username %}
+          <div class="card">
+            {{wtf.quick_form(form)}}
+          </div>
+        {% endif %}
 
         {% for post in person.posts[::-1] %}
           <div class="card">
